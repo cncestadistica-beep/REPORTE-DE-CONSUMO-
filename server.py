@@ -93,13 +93,23 @@ def verify_session_token(token):
         return False
 
 # ==============================================================================
-# DATABASE CONFIGURATION
+# DATABASE CONFIGURATION (Loaded securely from local .env)
 # ==============================================================================
-DB_HOST = os.environ.get('DB_HOST', '172.21.21.37')
+# Auto-load local .env file if present
+env_path = os.path.join(os.path.dirname(__file__), '.env')
+if os.path.exists(env_path):
+    with open(env_path, 'r', encoding='utf-8') as ef:
+        for line in ef:
+            line = line.strip()
+            if line and not line.startswith('#') and '=' in line:
+                k, v = line.split('=', 1)
+                os.environ.setdefault(k.strip(), v.strip())
+
+DB_HOST = os.environ.get('DB_HOST', 'localhost')
 DB_PORT = int(os.environ.get('DB_PORT', 5432))
-DB_NAME = os.environ.get('DB_NAME', 'icosalud_quinta')
+DB_NAME = os.environ.get('DB_NAME', '')
 DB_USER = os.environ.get('DB_USER', 'postgres')
-DB_PASSWORD = os.environ.get('DB_PASSWORD', 'Teleco2018')
+DB_PASSWORD = os.environ.get('DB_PASSWORD', '')
 
 MONTH_NAMES = {1:'Enero', 2:'Febrero', 3:'Marzo', 4:'Abril', 5:'Mayo', 6:'Junio', 7:'Julio', 8:'Agosto', 9:'Septiembre', 10:'Octubre', 11:'Noviembre', 12:'Diciembre'}
 MONTH_SHORT = {1:'ene', 2:'feb', 3:'mar', 4:'abr', 5:'may', 6:'jun', 7:'jul', 8:'ago', 9:'sep', 10:'oct', 11:'nov', 12:'dic'}
