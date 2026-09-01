@@ -101,7 +101,7 @@ function MenuPortal({ onLoginSuccess }) {
                   <input
                     type={showPassword ? 'text' : 'password'}
                     className="portal-input"
-                    placeholder="Ingrese contraseña (CNC2026)..."
+                    placeholder="Ingrese contraseña de acceso..."
                     value={password}
                     onChange={(e) => { setPassword(e.target.value); setErrorMsg(''); }}
                     disabled={isAuthenticating}
