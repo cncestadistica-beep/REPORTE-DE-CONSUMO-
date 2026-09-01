@@ -32,7 +32,7 @@ import {
   User,
   X
 } from 'lucide-react';
-import initialLocalData from './data.json';
+// Data is loaded 100% dynamically from PostgreSQL database via API
 
 const ALL_12_MONTHS = [
   'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
@@ -410,7 +410,19 @@ function ExcelPivotTable({ title, columns, data, searchField = 0, initialLimit =
 }
 
 export default function Dashboard({ onLogout }) {
-  const [currentDataset, setCurrentDataset] = useState(initialLocalData);
+  const [currentDataset, setCurrentDataset] = useState({
+    records: [],
+    metadata: {
+      anios: ['2026'],
+      meses: ALL_12_MONTHS,
+      dias: [],
+      cirujanos: [],
+      especialidades: [],
+      tipos: [],
+      totalRecords: 0,
+      fromDatabase: true
+    }
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [availableYears, setAvailableYears] = useState(HISTORICAL_YEARS);
 
@@ -429,7 +441,7 @@ export default function Dashboard({ onLogout }) {
     Array.from({ length: 31 }, (_, i) => String(i + 1).padStart(2, '0'))
   );
 
-  // Fetch years on load
+  // Fetch years and initial 2026 data dynamically from PostgreSQL on load
   useEffect(() => {
     fetch('/api/years')
       .then(r => r.json())
@@ -439,6 +451,9 @@ export default function Dashboard({ onLogout }) {
         }
       })
       .catch(() => {});
+
+    // Initial fetch of current year from PostgreSQL
+    fetchDataFromDB(selectedAnio || '2026', null);
   }, []);
 
   const fetchDataFromDB = async (year, month) => {
@@ -953,8 +968,32 @@ export default function Dashboard({ onLogout }) {
         </div>
       </header>
 
-      {/* Main Dashboard Content */}
+            {/* Main Dashboard Content */}
       <main className="dashboard-main">
+        {isLoading && currentDataset.records.length === 0 && (
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '60px 20px',
+            background: 'rgba(255, 255, 255, 0.94)',
+            borderRadius: '12px',
+            boxShadow: '0 8px 30px rgba(0,0,0,0.1)',
+            margin: '20px auto',
+            maxWidth: '600px',
+            textAlign: 'center',
+            color: '#007a7a'
+          }}>
+            <Loader2 size={40} className="spin-icon" color="#009999" style={{ marginBottom: '16px' }} />
+            <h2 style={{ fontSize: '18px', fontWeight: 800, marginBottom: '8px', color: '#1e293b' }}>
+              Consultando Base de Datos PostgreSQL...
+            </h2>
+            <p style={{ fontSize: '13px', color: '#64748b' }}>
+              Cargando registros activos de cirugías e insumos en tiempo real (icosalud_quinta).
+            </p>
+          </div>
+        )}
         {/* 1. Dropdown Filters Bar with clean glassmorphism */}
         <section className="filters-bar-card">
           <div className="filters-bar-header">

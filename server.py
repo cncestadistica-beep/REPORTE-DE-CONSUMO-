@@ -363,3 +363,20 @@ if __name__ == '__main__':
     print(f"Starting Secure PostgreSQL API Server on port {port}...")
     print("Authentication: CNC2026 enabled with PBKDF2 hashing & rate limiting.")
     app.run(host='0.0.0.0', port=port, debug=False)
+
+
+import threading
+
+def prewarm_database_cache():
+    """Background worker to query PostgreSQL on startup and keep cache hot for instant client response"""
+    try:
+        time.sleep(1)
+        print("[DATABASE] Pre-calentando caché de PostgreSQL para el año 2026...")
+        with app.test_client() as client:
+            client.get('/api/data?year=2026')
+        print("[DATABASE] Caché de PostgreSQL listo para consultas instantáneas!")
+    except Exception as e:
+        print(f"[DATABASE] Error en pre-calentamiento: {e}")
+
+# Start background cache pre-warmer
+threading.Thread(target=prewarm_database_cache, daemon=True).start()
