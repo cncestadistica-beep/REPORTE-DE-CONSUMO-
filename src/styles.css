@@ -13,7 +13,7 @@
   --excel-text-muted: #596b75;
   --excel-border: #d6e0e4;
   --excel-table-header: #009999;
-  --excel-table-zebra: #f9fbfb;
+  --excel-table-zebra: #edf2f6;
   --excel-table-border: #e0e8eb;
   --font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
 }
@@ -1618,4 +1618,22 @@ body {
 .daily-data-strip {
   background: #f0f9ff !important;
   backdrop-filter: none !important;
+}
+
+
+/* Noticeable Zebra Striping for the 3 Pivot Tables */
+.excel-pivot-table tbody tr:nth-child(even) {
+  background-color: #edf2f6 !important;
+}
+
+.excel-pivot-table tbody tr:nth-child(odd) {
+  background-color: #ffffff !important;
+}
+
+.excel-pivot-table tbody tr:hover {
+  background-color: #dcf3f3 !important;
+}
+
+.excel-pivot-table tbody tr:hover td {
+  background-color: transparent;
 }

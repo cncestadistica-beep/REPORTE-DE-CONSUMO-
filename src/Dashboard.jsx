@@ -337,7 +337,7 @@ function ExcelPivotTable({ title, columns, data, searchField = 0, initialLimit =
                     const num = typeof cell === 'number' ? cell : 0;
                     if (num <= 0.80001) {
                       const ratio = Math.min(Math.max(num / 0.80, 0), 1);
-                      const alpha = (0.30 - (0.26 * ratio)).toFixed(3);
+                      const alpha = (0.32 - (0.26 * ratio)).toFixed(3);
                       paretoStyle = {
                         backgroundColor: `rgba(16, 185, 129, ${alpha})`,
                         color: '#047857',
@@ -345,7 +345,6 @@ function ExcelPivotTable({ title, columns, data, searchField = 0, initialLimit =
                       };
                     } else {
                       paretoStyle = {
-                        backgroundColor: '#ffffff',
                         color: '#64748b',
                         fontWeight: 500
                       };
