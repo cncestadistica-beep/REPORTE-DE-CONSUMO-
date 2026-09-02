@@ -45,7 +45,10 @@ const HISTORICAL_YEARS = ['2026', '2025', '2024', '2023', '2022', '2021', '2020'
 const moneyShort = n => {
   if (n === 0 || !n) return '$0.000m';
   if (Math.abs(n) >= 1e6) {
-    return `$${(n / 1e6).toFixed(3)}m`;
+    const valInM = (n / 1e6).toFixed(3);
+    const [intPart, decPart] = valInM.split('.');
+    const formattedInt = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    return `$${formattedInt}.${decPart}m`;
   }
   return `$${Math.round(n).toLocaleString('es-CO')}`;
 };
@@ -1275,7 +1278,7 @@ export default function Dashboard({ onLogout }) {
                 <XAxis
                   type="number"
                   domain={[0, maxMonthlyVal]}
-                  tickFormatter={v => `$${(v / 1e6).toFixed(0)}m`}
+                  tickFormatter={v => `$${Math.round(v / 1e6).toLocaleString('es-CO')}m`}
                   tick={{ fontSize: 10, fill: '#60727c' }}
                   axisLine={{ stroke: '#ccd7dc' }}
                   tickLine={false}
@@ -1356,7 +1359,7 @@ export default function Dashboard({ onLogout }) {
                   tickLine={false}
                 />
                 <YAxis
-                  tickFormatter={v => `$${(v / 1e6).toFixed(0)}m`}
+                  tickFormatter={v => `$${Math.round(v / 1e6).toLocaleString('es-CO')}m`}
                   tick={{ fontSize: 10, fill: '#60727c' }}
                   axisLine={false}
                   tickLine={false}
