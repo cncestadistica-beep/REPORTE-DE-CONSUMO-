@@ -120,6 +120,13 @@ for k, v in MONTH_SHORT.items():
 ALL_12_MONTHS = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
 
 CACHE = {}
+CACHE_TTL_SECONDS = 60  # Caché de corta duración (60 segundos) para consultas rápidas pero siempre actualizadas
+
+@app.route('/api/refresh', methods=['GET', 'POST'])
+def refresh_cache():
+    """Endpoint explícito para limpiar la memoria caché del servidor"""
+    CACHE.clear()
+    return jsonify({'success': True, 'message': 'Caché de datos invalidada correctamente'})
 
 def get_db_connection():
     return psycopg2.connect(
@@ -244,10 +251,25 @@ def get_years():
 def get_data():
     year = request.args.get('year', '2026')
     month = request.args.get('month', '')
+    force_refresh = (
+        request.args.get('refresh', '').lower() in ['true', '1', 'yes'] or
+        request.args.get('force', '').lower() in ['true', '1', 'yes'] or
+        request.args.get('_t') is not None
+    )
 
     cache_key = f"{year}_{month}"
-    if cache_key in CACHE:
-        return jsonify(CACHE[cache_key])
+    now = time.time()
+
+    if force_refresh:
+        # Si se solicita recarga explícita, limpiamos la caché
+        CACHE.clear()
+    elif cache_key in CACHE:
+        cached_entry = CACHE[cache_key]
+        if isinstance(cached_entry, dict) and 'timestamp' in cached_entry and 'data' in cached_entry:
+            if (now - cached_entry['timestamp']) < CACHE_TTL_SECONDS:
+                return jsonify(cached_entry['data'])
+        else:
+            CACHE.pop(cache_key, None)
 
     try:
         # Date clause
@@ -340,11 +362,15 @@ def get_data():
                 'tipos': sorted([t for t in all_tipos if t]),
                 'totalRecords': len(records),
                 'queryTimeSeconds': round(elapsed, 2),
-                'fromDatabase': True
+                'fromDatabase': True,
+                'refreshedAt': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             }
         }
 
-        CACHE[cache_key] = result
+        CACHE[cache_key] = {
+            'timestamp': time.time(),
+            'data': result
+        }
         return jsonify(result)
 
     except Exception as e:

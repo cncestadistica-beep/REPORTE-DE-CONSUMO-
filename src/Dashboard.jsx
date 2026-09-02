@@ -456,14 +456,20 @@ export default function Dashboard({ onLogout }) {
     fetchDataFromDB(selectedAnio || '2026', null);
   }, []);
 
-  const fetchDataFromDB = async (year, month) => {
+  const fetchDataFromDB = async (year, month, forceRefresh = false) => {
     if (!year) return;
     setIsLoading(true);
     try {
       const token = sessionStorage.getItem('auth_token') || '';
-      const url = `/api/data?year=${year}${month ? `&month=${encodeURIComponent(month)}` : ''}`;
+      let url = `/api/data?year=${year}${month ? `&month=${encodeURIComponent(month)}` : ''}`;
+      if (forceRefresh) {
+        url += `&refresh=true&_t=${Date.now()}`;
+      }
       const res = await fetch(url, {
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Cache-Control': forceRefresh ? 'no-cache, no-store' : 'default'
+        }
       });
       if (res.ok) {
         const data = await res.json();
@@ -1015,8 +1021,18 @@ export default function Dashboard({ onLogout }) {
               {selectedAnio && (
                 <button
                   className="excel-btn"
-                  title="Recargar datos de este año desde PostgreSQL"
-                  onClick={() => fetchDataFromDB(selectedAnio, selectedMes)}
+                  title="Recargar datos directamente desde PostgreSQL"
+                  onClick={() => {
+                    fetch(`/api/years?_t=${Date.now()}`)
+                      .then(r => r.json())
+                      .then(yData => {
+                        if (yData.years && yData.years.length > 0) {
+                          setAvailableYears(yData.years);
+                        }
+                      })
+                      .catch(() => {});
+                    fetchDataFromDB(selectedAnio, selectedMes, true);
+                  }}
                   disabled={isLoading}
                 >
                   <RefreshCw size={13} className={isLoading ? 'spin-icon' : ''} />
